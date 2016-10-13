@@ -133,6 +133,6 @@ void MainWindow::on_mixSoundsButton_clicked()
     p->play();
 
     WavSaver saver(desiredFormat, rawresult);
-    saver.SaveFile(QString("output.wav"));
+    saver.saveFile(QString("output.wav"));
 
 }

@@ -45,7 +45,7 @@ WavSaver::WavSaver(QAudioFormat &_format, QByteArray &_array, QObject *parent)
    Q_ASSERT(array.data());
 }
 
-void WavSaver::SaveFile(QString &fileName) {
+void WavSaver::saveFile(QString fileName) {
     //add header
 
     CombinedHeader header = {};
