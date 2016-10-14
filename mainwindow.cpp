@@ -3,7 +3,6 @@
 #include "mainwindow.h"
 #include "playsound.h"
 #include "ui_mainwindow.h"
-#include "wavfile.h"
 #include "mixer.h"
 #include "utils.h"
 #include "wavsaver.h"
@@ -24,25 +23,11 @@ MainWindow::MainWindow(QWidget *parent) :
     rawdata1 = 0;
     rawdata2 = 0;
 
-    desiredFormat.setChannelCount(2);
-    desiredFormat.setCodec("audio/pcm");
-    desiredFormat.setSampleType(QAudioFormat::SignedInt);
-    desiredFormat.setSampleRate(44100);
-    desiredFormat.setSampleSize(16);
-
-
-
-    WavFile * wavFile = new WavFile(this);
-    wavFile->open("Sound.wav");
-    QAudioFormat f = wavFile->fileFormat();
-
-    qDebug() << f.channelCount();
-    qDebug() << f.sampleRate();
-    qDebug() << f.sampleSize();
-    qDebug() << f.codec();
-
-
-
+    format.setChannelCount(2);
+    format.setCodec("audio/pcm");
+    format.setSampleType(QAudioFormat::SignedInt);
+    format.setSampleRate(44100);
+    format.setSampleSize(16);
 }
 
 MainWindow::~MainWindow()
@@ -59,7 +44,7 @@ void MainWindow::on_loadVoiceButton_clicked()
 
     if (d1)
         delete d1;
-    d1 = new Decoder(desiredFormat);
+    d1 = new Decoder(format);
     connect(d1, SIGNAL(dataReady()), this, SLOT(onDecodingReady()));
     d1->setFileName(voiceFile);
     d1->start();
@@ -96,10 +81,10 @@ void MainWindow::onDecodingReady() {
 void MainWindow::on_mixWithGeneratedButton_clicked()
 {
     //check for memory leak
-    Generator *g = new Generator(desiredFormat, 1000000, frequencyHz, this);
+    Generator *g = new Generator(format, 1000000, frequencyHz, this);
     QByteArray *generatedData = g->getData();
 
-    PlaySound *p = new PlaySound(generatedData, desiredFormat, this);
+    PlaySound *p = new PlaySound(generatedData, format, this);
     //fix this
     connect(this, SIGNAL(stopPlay()), p, SLOT(stop()));
     p->play();
@@ -118,21 +103,21 @@ void MainWindow::on_mixSoundsButton_clicked()
    Q_ASSERT(rawdata1);
    rawresult.clear();
 
-   Generator g(desiredFormat, getDurationInUMsFromLength(desiredFormat, rawdata1->size()), frequencyHz);
+   Generator g(format, getDurationInUMsFromLength(format, rawdata1->size()), frequencyHz);
    rawdata2 = g.getData();
 
    Q_ASSERT(rawdata2);
 
-   Mixer mixer(desiredFormat, *rawdata1, *rawdata2, rawresult);
+   Mixer mixer(format, *rawdata1, *rawdata2, rawresult);
    mixer.mixSounds();
 
    Q_ASSERT(rawresult.data());
 
    //Play sounds
-    PlaySound *p = new PlaySound(&rawresult, desiredFormat, this);
+    PlaySound *p = new PlaySound(&rawresult, format, this);
     p->play();
 
-    WavSaver saver(desiredFormat, rawresult);
+    WavSaver saver(format, rawresult);
     saver.saveFile(QString("output.wav"));
 
 }

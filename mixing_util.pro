@@ -20,7 +20,6 @@ SOURCES += main.cpp\
     generator.cpp \
     decoder.cpp \
     createfile.cpp \
-    wavfile.cpp \
     utils.cpp \
     wavsaver.cpp
 
@@ -31,7 +30,6 @@ HEADERS  += mainwindow.h \
     generator.h \
     decoder.h \
     createfile.h \
-    wavfile.h \
     utils.h \
     wavsaver.h
 

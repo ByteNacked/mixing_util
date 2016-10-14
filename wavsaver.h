@@ -9,10 +9,10 @@ class WavSaver : public QObject
 {
     Q_OBJECT
 public:
-    explicit WavSaver(QAudioFormat &format, QByteArray &array, QObject *parent = 0);
+    explicit WavSaver(QAudioFormat &format, QByteArray &data, QObject *parent = 0);
     void saveFile(QString fileName) ;
 private:
-    QByteArray &array;
+    QByteArray &data;
     QAudioFormat &format;
 signals:
 

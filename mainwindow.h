@@ -20,7 +20,7 @@ public:
 
     QString musicFile;
     QString voiceFile;
-    QAudioFormat desiredFormat;
+    QAudioFormat format;
 
     QByteArray *rawdata1, *rawdata2, rawresult;
     Decoder *d1, *d2;
