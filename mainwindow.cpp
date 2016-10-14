@@ -17,17 +17,26 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    frequencyHz = 600;
-    d1 = 0;
-    d2 = 0;
-    rawdata1 = 0;
-    rawdata2 = 0;
-
     format.setChannelCount(2);
     format.setCodec("audio/pcm");
     format.setSampleType(QAudioFormat::SignedInt);
     format.setSampleRate(44100);
     format.setSampleSize(16);
+
+    p = new PlaySound(format, this);
+    d = new Decoder(format);
+
+    frequencyHz = 600;
+    buffer1 = new QByteArray;
+    buffer2 = new QByteArray;
+
+    saveOutputFlag = false;
+    isTestTonePlaying = false;
+    mixWithFile = false;
+
+
+    connect(this, SIGNAL(stopPlay()), p, SLOT(stop()));
+    connect(d, SIGNAL(dataReady()), this, SLOT(onDecodingReady()));
 }
 
 MainWindow::~MainWindow()
@@ -42,52 +51,42 @@ void MainWindow::on_loadVoiceButton_clicked()
     voiceFile =  QString(lf->getFileName());
     ui->voiceLineEdit->setText(voiceFile);
 
-    if (d1)
-        delete d1;
-    d1 = new Decoder(format);
-    connect(d1, SIGNAL(dataReady()), this, SLOT(onDecodingReady()));
-    d1->setFileName(voiceFile);
-    d1->start();
+    if(buffer1) buffer1->clear();
+    d->setFileName(voiceFile);
+    d->start(buffer1);
 }
 
 void MainWindow::on_loadMusicButton_clicked()
 {
     //todo emit signal stop play
-    LoadFile *lf = new LoadFile(this);
-    musicFile =  QString(lf->getFileName());
+    LoadFile lf;
+    musicFile =  QString(lf.getFileName());
     ui->musicLineEdit->setText(musicFile);
 
-    if (d2)
-        delete d2;
+    if(buffer2) buffer2->clear();
+    d->setFileName(musicFile);
+    d->start(buffer2);
 }
 
 void MainWindow::onDecodingReady() {
-    Q_ASSERT(d1 != 0);
+    Q_ASSERT(d != 0);
 
-    if (rawdata1)
-        delete rawdata1;
-
-    rawdata1 = d1->getData();
-
+    qDebug() << "MainWindow::onDecodingReady Decoding ready!";
     //QMessageBox msgBox;
     //msgBox.setText("Look like buffer copied!\n");
     //msgBox.exec();
 
-    //PlaySound *p = new PlaySound(rawdata1, desiredFormat, this);
-    //p->play();
 }
 
 
 void MainWindow::on_mixWithGeneratedButton_clicked()
 {
-    //check for memory leak
-    Generator *g = new Generator(format, 1000000, frequencyHz, this);
-    QByteArray *generatedData = g->getData();
+    Generator g(format, 1000000, frequencyHz, this);
+    //TODO: MEMORY LEAK
+    QByteArray *generatedData = g.getData();
 
-    PlaySound *p = new PlaySound(generatedData, format, this);
-    //fix this
-    connect(this, SIGNAL(stopPlay()), p, SLOT(stop()));
-    p->play();
+    playBuffer(generatedData);
+    QThread::msleep(100);
 }
 
 void MainWindow::on_dial_valueChanged(int value)
@@ -95,29 +94,44 @@ void MainWindow::on_dial_valueChanged(int value)
     emit stopPlay();
     frequencyHz = value;
     ui->current_hz->setText(QString::number(value));
-    //on_mixWithGeneratedButton_clicked();
+}
+
+void MainWindow::playBuffer(QByteArray *buffer) {
+
+    p->play(buffer);
 }
 
 void MainWindow::on_mixSoundsButton_clicked()
 {
-   Q_ASSERT(rawdata1);
-   rawresult.clear();
+   Q_ASSERT(buffer1);
+   resultBuffer.clear();
 
-   Generator g(format, getDurationInUMsFromLength(format, rawdata1->size()), frequencyHz);
-   rawdata2 = g.getData();
+   if(!mixWithFile) {
+       Generator g(format, getDurationInUMsFromLength(format, buffer1->size()), frequencyHz);
+       buffer2 = g.getData();
+   }
 
-   Q_ASSERT(rawdata2);
+   Q_ASSERT(buffer2);
 
-   Mixer mixer(format, *rawdata1, *rawdata2, rawresult);
+   Mixer mixer(format, *buffer1, *buffer2, resultBuffer);
    mixer.mixSounds();
 
-   Q_ASSERT(rawresult.data());
+   Q_ASSERT(resultBuffer.data());
+   Q_ASSERT(resultBuffer.size() != 0);
 
    //Play sounds
-    PlaySound *p = new PlaySound(&rawresult, format, this);
-    p->play();
+    playBuffer(&resultBuffer);
 
-    WavSaver saver(format, rawresult);
+    WavSaver saver(format, resultBuffer);
     saver.saveFile(QString("output.wav"));
+}
 
+void MainWindow::on_checkBox_clicked(bool checked)
+{
+    mixWithFile = checked;
+}
+
+void MainWindow::on_stopPlayback_clicked()
+{
+   p->stop();
 }

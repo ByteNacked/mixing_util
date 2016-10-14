@@ -12,7 +12,7 @@ public:
     explicit Decoder(QAudioFormat desiredFormat, QObject *parent = 0);
     QByteArray * getData();
     void setFileName(QString &fileName);
-    void start();
+    void start(QByteArray *_data);
 private:
     QAudioDecoder *decoder;
     QByteArray * data;

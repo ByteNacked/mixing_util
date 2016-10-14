@@ -12,6 +12,7 @@ public:
                      qint64 durationUs,
                      int sampleRate,
                      QObject *parent = 0);
+    ~Generator();
     QByteArray * getData();
 private:
     void generateData(const QAudioFormat &format, qint64 durationUs, int sampleRate);

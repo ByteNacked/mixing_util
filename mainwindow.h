@@ -2,9 +2,11 @@
 #define MAINWINDOW_H
 
 #include "decoder.h"
+#include "playsound.h"
 
 #include <QMainWindow>
 #include <QMediaPlayer>
+#include <QThread>
 
 namespace Ui {
 class MainWindow;
@@ -18,30 +20,41 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    QString musicFile;
-    QString voiceFile;
-    QAudioFormat format;
-
-    QByteArray *rawdata1, *rawdata2, rawresult;
-    Decoder *d1, *d2;
-
-
 private slots:
+
     void onDecodingReady();
     void on_loadVoiceButton_clicked();
     void on_loadMusicButton_clicked();
-
     void on_mixWithGeneratedButton_clicked();
-
     void on_dial_valueChanged(int value);
-
     void on_mixSoundsButton_clicked();
 
+    void on_checkBox_clicked(bool checked);
+
+    void on_stopPlayback_clicked();
+
 private:
+
+    void playBuffer(QByteArray *buffer);
+
+private:
+
+    QString musicFile;
+    QString voiceFile;
+    QAudioFormat format;
+    QByteArray *buffer1, *buffer2, resultBuffer;
+    PlaySound *p;
+    Decoder *d;
 
     int frequencyHz;
     QMediaPlayer *player;
     Ui::MainWindow *ui;
+
+    bool saveOutputFlag;
+    bool isTestTonePlaying;
+    bool mixWithFile;
+
+
 signals:
     void stopPlay();
 };

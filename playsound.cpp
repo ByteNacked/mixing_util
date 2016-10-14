@@ -1,26 +1,30 @@
 #include "playsound.h"
-#include <QAudioOutput>
 #include <QDebug>
-#include <QTimer>
 
-PlaySound::PlaySound(QByteArray * data, QAudioFormat _format, QObject *parent)
+PlaySound::PlaySound(QAudioFormat _format, QObject *parent)
     : QObject(parent),
-      rawdata(data),
       format(_format),
-      len(data->length()),
       iterator(0)
 {
-
+    audioOutput = new QAudioOutput(format, this);
+    timer = 0;
 }
 
-void PlaySound::play() {
-    Q_ASSERT(rawdata != 0 && len !=0);
+void PlaySound::play(QByteArray *_data) {
+    data = _data;
+    len = data->length();
+    Q_ASSERT(_data);
+    Q_ASSERT(data->size() != 0);
+    Q_ASSERT(len !=0);
+    Q_ASSERT(audioOutput);
 
+    if(audioOutput->state() == QAudio::ActiveState)
+        audioOutput->stop();
     qDebug() << "in playsound::play";
-    audioOutput = new QAudioOutput(format, this);
     audioDevice =  audioOutput->start();
 
-    QTimer *timer = new QTimer(this);
+
+    timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), SLOT(playSegment()));
     timer->start(20);
 }
@@ -32,7 +36,7 @@ void PlaySound::playSegment() {
         if (audioOutput->bytesFree() >= audioOutput->periodSize()) {
 
             int multiplier = audioOutput->bytesFree() / audioOutput->periodSize();
-            iterator += audioDevice->write(rawdata->data() + iterator, multiplier * audioOutput->periodSize());
+            iterator += audioDevice->write(data->data() + iterator, multiplier * audioOutput->periodSize());
         }
     }
 
@@ -40,7 +44,9 @@ void PlaySound::playSegment() {
 
 
 void PlaySound::stop() {
+    timer->disconnect();
+    //if (timer) delete timer;
+
     audioOutput->stop();
-    audioOutput->disconnect(this);
 }
 

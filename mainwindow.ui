@@ -34,7 +34,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Load Voice</string>
+     <string>Load sound1</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="musicLineEdit">
@@ -57,7 +57,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Load Music</string>
+     <string>Load sound2</string>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -97,7 +97,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Mix</string>
+     <string>Test</string>
     </property>
    </widget>
    <widget class="QDial" name="dial">
@@ -143,6 +143,32 @@
     </property>
     <property name="text">
      <string>600</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>60</y>
+      <width>91</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>mix with file</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="stopPlayback">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>180</y>
+      <width>25</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>stop</string>
     </property>
    </widget>
   </widget>

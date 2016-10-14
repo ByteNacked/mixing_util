@@ -6,22 +6,23 @@
 #include <QAudioBuffer>
 #include <QIODevice>
 #include <QAudioOutput>
+#include <QTimer>
 
 class PlaySound : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit PlaySound(QByteArray * data, QAudioFormat _format, QObject *parent = 0);
-    void play();
-
+    explicit PlaySound(QAudioFormat _format, QObject *parent = 0);
+    void play(QByteArray *_data);
 private:
-    QByteArray *rawdata;
+    QByteArray *data;
     quint64 iterator;
     quint64 len;
     QIODevice *audioDevice;
     QAudioOutput *audioOutput;
     QAudioFormat format;
+    QTimer *timer;
 
 signals:
 

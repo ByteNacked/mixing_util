@@ -5,7 +5,6 @@ Decoder::Decoder(QAudioFormat desiredFormat, QObject *parent) : QObject(parent)
 {
     decoder = new QAudioDecoder(this);
     decoder->setAudioFormat(desiredFormat);
-    data = new QByteArray;
 
     connect(decoder, SIGNAL(bufferReady()), this, SLOT(readBuffer()));
     connect(decoder, SIGNAL(finished()), this, SIGNAL(dataReady()));
@@ -13,12 +12,14 @@ Decoder::Decoder(QAudioFormat desiredFormat, QObject *parent) : QObject(parent)
 }
 
 void Decoder::setFileName(QString &fileName) {
+    Q_ASSERT(&decoder);
     qDebug() << "in setfilename";
     decoder->setSourceFilename(fileName);
 }
 
 
-void Decoder::start() {
+void Decoder::start(QByteArray *_data) {
+    data = _data;
     qDebug() << "in start()";
     decoder->start();
 }

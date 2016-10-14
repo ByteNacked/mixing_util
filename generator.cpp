@@ -3,6 +3,8 @@
 #include <qmath.h>
 #include <qendian.h>
 
+#include <QDebug>
+
 Generator::Generator(const QAudioFormat &format,
                      qint64 durationUs,
                      int sampleRate,
@@ -12,6 +14,10 @@ Generator::Generator(const QAudioFormat &format,
     m_buffer = new QByteArray;
     if (format.isValid())
         generateData(format, durationUs, sampleRate);
+}
+
+Generator::~Generator()
+{
 }
 
 void Generator::generateData(const QAudioFormat &format, qint64 durationUs, int sampleRate)
@@ -57,6 +63,7 @@ void Generator::generateData(const QAudioFormat &format, qint64 durationUs, int 
         }
         ++sampleIndex;
     }
+    qDebug() << "Generator::generateData " << sampleIndex << " samles generated";
 }
 
 QByteArray *Generator::getData() {
