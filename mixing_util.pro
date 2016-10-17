@@ -19,7 +19,6 @@ SOURCES += main.cpp\
     playsound.cpp \
     generator.cpp \
     decoder.cpp \
-    createfile.cpp \
     utils.cpp \
     wavsaver.cpp
 
@@ -29,7 +28,6 @@ HEADERS  += mainwindow.h \
     playsound.h \
     generator.h \
     decoder.h \
-    createfile.h \
     utils.h \
     wavsaver.h
 

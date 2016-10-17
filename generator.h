@@ -9,9 +9,10 @@ class Generator : public QObject
     Q_OBJECT
 public:
     Generator(const QAudioFormat &format,
-                     qint64 durationUs,
-                     int sampleRate,
-                     QObject *parent = 0);
+              QByteArray &_buffer,
+              qint64 durationUs,
+              int sampleRate,
+              QObject *parent = 0);
     ~Generator();
     QByteArray * getData();
 private:

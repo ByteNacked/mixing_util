@@ -6,12 +6,15 @@
 #include <QDebug>
 
 Generator::Generator(const QAudioFormat &format,
+                     QByteArray &_buffer,
                      qint64 durationUs,
                      int sampleRate,
                      QObject *parent)
-    :   QObject(parent)
+    :   QObject(parent),
+      m_buffer(&_buffer)
 {
-    m_buffer = new QByteArray;
+    m_buffer->clear();
+
     if (format.isValid())
         generateData(format, durationUs, sampleRate);
 }

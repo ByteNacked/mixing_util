@@ -16,16 +16,19 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    //////////////////////////////////////////////
+    //////////   INNER FORMAT ////////////////////
     format.setChannelCount(2);
     format.setCodec("audio/pcm");
     format.setSampleType(QAudioFormat::SignedInt);
     format.setSampleRate(44100);
     format.setSampleSize(16);
+    /////////////////////////////////////////////
 
     p = new PlaySound(format, this);
-    d = new Decoder(format);
+    d = new Decoder(format, this);
 
+    //Started freq
     frequencyHz = 600;
     buffer1 = new QByteArray;
     buffer2 = new QByteArray;
@@ -36,11 +39,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     connect(this, SIGNAL(stopPlay()), p, SLOT(stop()));
-    connect(d, SIGNAL(dataReady()), this, SLOT(onDecodingReady()));
+    connect(d, SIGNAL(dataReady(Decoder *)), this, SLOT(onDecodingReady(Decoder *)));
 }
 
 MainWindow::~MainWindow()
 {
+    delete buffer1;
+    delete buffer2;
+
     delete ui;
 }
 
@@ -63,15 +69,20 @@ void MainWindow::on_loadMusicButton_clicked()
     musicFile =  QString(lf.getFileName());
     ui->musicLineEdit->setText(musicFile);
 
+    //MIX with file ON Set checkbox and boolean
+    mixWithFile = true;
+    ui->checkBox->setCheckState(Qt::Checked);
+
     if(buffer2) buffer2->clear();
     d->setFileName(musicFile);
     d->start(buffer2);
 }
 
-void MainWindow::onDecodingReady() {
-    Q_ASSERT(d != 0);
+void MainWindow::onDecodingReady(Decoder *ptr) {
+    Q_ASSERT(ptr);
 
-    qDebug() << "MainWindow::onDecodingReady Decoding ready!";
+    qDebug() << "MainWindow::onDecodingReady Decoding ready!  " << ptr;
+
     //QMessageBox msgBox;
     //msgBox.setText("Look like buffer copied!\n");
     //msgBox.exec();
@@ -81,9 +92,9 @@ void MainWindow::onDecodingReady() {
 
 void MainWindow::on_mixWithGeneratedButton_clicked()
 {
-    Generator g(format, 1000000, frequencyHz, this);
     //TODO: MEMORY LEAK
-    QByteArray *generatedData = g.getData();
+    QByteArray *generatedData = new QByteArray;
+    Generator g(format, *generatedData, 1000000, frequencyHz, this);
 
     playBuffer(generatedData);
     QThread::msleep(100);
@@ -104,17 +115,20 @@ void MainWindow::playBuffer(QByteArray *buffer) {
 void MainWindow::on_mixSoundsButton_clicked()
 {
    Q_ASSERT(buffer1);
+   Q_ASSERT(buffer2);
+
    resultBuffer.clear();
 
    if(!mixWithFile) {
-       Generator g(format, getDurationInUMsFromLength(format, buffer1->size()), frequencyHz);
-       buffer2 = g.getData();
+       QByteArray genBuf;
+       Generator g(format, genBuf, getDurationInUMsFromLength(format, buffer1->size()), frequencyHz);
+       Mixer mixer(format, *buffer1, genBuf, resultBuffer);
+       mixer.mixSounds();
    }
-
-   Q_ASSERT(buffer2);
-
-   Mixer mixer(format, *buffer1, *buffer2, resultBuffer);
-   mixer.mixSounds();
+   else {
+       Mixer mixer(format, *buffer1, *buffer2, resultBuffer);
+       mixer.mixSounds();
+   }
 
    Q_ASSERT(resultBuffer.data());
    Q_ASSERT(resultBuffer.size() != 0);
@@ -128,6 +142,7 @@ void MainWindow::on_mixSoundsButton_clicked()
 
 void MainWindow::on_checkBox_clicked(bool checked)
 {
+    qDebug() << "MainWIndow::checkbox_clicked";
     mixWithFile = checked;
 }
 

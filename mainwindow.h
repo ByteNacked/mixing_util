@@ -22,7 +22,7 @@ public:
 
 private slots:
 
-    void onDecodingReady();
+    void onDecodingReady(Decoder *ptr);
     void on_loadVoiceButton_clicked();
     void on_loadMusicButton_clicked();
     void on_mixWithGeneratedButton_clicked();

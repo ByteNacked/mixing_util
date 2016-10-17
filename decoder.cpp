@@ -7,27 +7,23 @@ Decoder::Decoder(QAudioFormat desiredFormat, QObject *parent) : QObject(parent)
     decoder->setAudioFormat(desiredFormat);
 
     connect(decoder, SIGNAL(bufferReady()), this, SLOT(readBuffer()));
-    connect(decoder, SIGNAL(finished()), this, SIGNAL(dataReady()));
+    connect(decoder, SIGNAL(finished()), this, SLOT(reEmmitFinished()));
 
 }
 
 void Decoder::setFileName(QString &fileName) {
     Q_ASSERT(&decoder);
+    decoder->stop();
     qDebug() << "in setfilename";
     decoder->setSourceFilename(fileName);
 }
 
 
 void Decoder::start(QByteArray *_data) {
+    Q_ASSERT(_data);
     data = _data;
-    qDebug() << "in start()";
+    qDebug() << "Decoder::start()";
     decoder->start();
-}
-
-QByteArray *Decoder::getData()
-{
-    qDebug() << "in getData";
-    return data;
 }
 
 void Decoder::readBuffer() {
@@ -35,4 +31,10 @@ void Decoder::readBuffer() {
 
     data->append(buf.data<char>(), buf.byteCount());
     //qDebug() << "in readBUffer()";
+}
+
+
+void Decoder::reEmmitFinished() {
+
+    emit dataReady(this);
 }
