@@ -1,35 +1,12 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2016-10-09T04:20:45
-#
-#-------------------------------------------------
+include(mixing_util.pri)
 
-QT       += core gui multimedia
+TEMPLATE = subdirs
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+# Ensure that library is built before application
+CONFIG  += ordered
+
+!contains(DEFINES, DISABLE_FFT): SUBDIRS += 3rdparty/fftreal
+SUBDIRS += app
 
 TARGET = mixing_util
-TEMPLATE = app
 
-
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    loadfile.cpp \
-    mixer.cpp \
-    playsound.cpp \
-    generator.cpp \
-    decoder.cpp \
-    utils.cpp \
-    wavsaver.cpp
-
-HEADERS  += mainwindow.h \
-    loadfile.h \
-    mixer.h \
-    playsound.h \
-    generator.h \
-    decoder.h \
-    utils.h \
-    wavsaver.h
-
-FORMS    += mainwindow.ui
-CONFIG   += c++11
